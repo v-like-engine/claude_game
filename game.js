@@ -17,13 +17,13 @@ class MoscowRailwaysGame {
             exp: 0,
             currentTrain: null,
             currentRoute: null,
-            unlockedTrains: ['ed4m', 'em4'],
+            unlockedTrains: ['er22', 'em4'],
             unlockedRoutes: ['mcd1']
         };
 
         // Game Time
         this.gameTime = { hours: 6, minutes: 0 }; // Starts at 6:00 AM
-        this.realTimeMultiplier = 60; // 1 real second = 60 game seconds
+        this.realTimeMultiplier = 12; // 1 real second = 12 game seconds (slowed down for better gameplay)
 
         // Train State
         this.trainState = {
@@ -46,6 +46,13 @@ class MoscowRailwaysGame {
         // Animation State
         this.animationOffset = 0; // For scrolling background
         this.cloudPositions = this.generateClouds();
+
+        // Notification System
+        this.notifications = [];
+
+        // Platform Animation
+        this.platformPeople = [];
+        this.generatePlatformPeople();
 
         // Passenger Management
         this.passengers = [];
@@ -97,16 +104,68 @@ class MoscowRailwaysGame {
         return clouds;
     }
 
+    generatePlatformPeople() {
+        const people = [];
+        for (let i = 0; i < 12; i++) {
+            people.push({
+                x: Math.random() * 400 - 200,
+                speed: (Math.random() * 40 + 20) * (Math.random() > 0.5 ? 1 : -1),
+                type: Math.floor(Math.random() * 3), // Different person types
+                offset: Math.random() * Math.PI * 2
+            });
+        }
+        return people;
+    }
+
+    addNotification(message, isPositive = true) {
+        const notification = {
+            message,
+            isPositive,
+            alpha: 1.0,
+            y: 150 + this.notifications.length * 35, // Stack notifications
+            createdAt: Date.now()
+        };
+        this.notifications.push(notification);
+    }
+
+    updateNotifications(deltaTime) {
+        this.notifications = this.notifications.filter(notif => {
+            const age = Date.now() - notif.createdAt;
+            if (age > 3000) {
+                notif.alpha = Math.max(0, notif.alpha - (deltaTime / 500));
+                return notif.alpha > 0;
+            }
+            return true;
+        });
+
+        // Re-adjust y positions to prevent stacking
+        this.notifications.forEach((notif, index) => {
+            notif.y = 150 + index * 35;
+        });
+    }
+
     initializeTrainData() {
         this.trains = {
+            'er22': {
+                name: 'ЭР22',
+                nameEn: 'er22',
+                maxSpeed: 85,
+                accelerationRate: 4.0,
+                brakingRate: 5.5,
+                capacity: 1000,
+                requiredExp: 0,
+                description: 'Legendary Soviet electric train',
+                railcars: 10,
+                icon: '🚂'
+            },
             'ed4m': {
                 name: 'ЭД4М',
                 nameEn: 'ed4m',
                 maxSpeed: 90,
-                accelerationRate: 4.5,  // Increased from 1.2
-                brakingRate: 6.0,       // Increased from 2.0
+                accelerationRate: 4.5,
+                brakingRate: 6.0,
                 capacity: 1200,
-                requiredExp: 0,
+                requiredExp: 100,
                 description: 'Classic electric train',
                 railcars: 10,
                 icon: '🚃'
@@ -115,20 +174,44 @@ class MoscowRailwaysGame {
                 name: 'ЭМ4',
                 nameEn: 'em4',
                 maxSpeed: 100,
-                accelerationRate: 5.5,  // Increased from 1.5
-                brakingRate: 7.0,       // Increased from 2.3
+                accelerationRate: 5.5,
+                brakingRate: 7.0,
                 capacity: 1400,
                 requiredExp: 0,
                 description: 'Modern electric multiple unit',
                 railcars: 12,
                 icon: '🚄'
             },
+            'ep2d': {
+                name: 'ЭП2Д',
+                nameEn: 'ep2d',
+                maxSpeed: 160,
+                accelerationRate: 6.5,
+                brakingRate: 8.0,
+                capacity: 1800,
+                requiredExp: 800,
+                description: 'Double-decker express train',
+                railcars: 12,
+                icon: '🚆'
+            },
+            'esh2': {
+                name: 'ЭШ2',
+                nameEn: 'esh2',
+                maxSpeed: 120,
+                accelerationRate: 6.0,
+                brakingRate: 7.5,
+                capacity: 1500,
+                requiredExp: 400,
+                description: 'Wide-body electric train',
+                railcars: 11,
+                icon: '🚈'
+            },
             'es2g': {
                 name: 'ЭС2Г "Ласточка"',
                 nameEn: 'es2g',
                 maxSpeed: 130,
-                accelerationRate: 7.0,  // Increased from 2.0
-                brakingRate: 8.5,       // Increased from 2.8
+                accelerationRate: 7.0,
+                brakingRate: 8.5,
                 capacity: 1200,
                 requiredExp: 500,
                 description: 'High-speed Lastochka train',
@@ -303,7 +386,7 @@ class MoscowRailwaysGame {
             exp: 0,
             currentTrain: null,
             currentRoute: null,
-            unlockedTrains: ['ed4m', 'em4'],
+            unlockedTrains: ['er22', 'em4'],
             unlockedRoutes: ['mcd1']
         };
         this.gameTime = { hours: 6, minutes: 0 };
@@ -623,6 +706,7 @@ class MoscowRailwaysGame {
             p.onBoard && p.destinationStation === currentStationIndex
         );
 
+        const deliveredCount = passengersGettingOff.length;
         passengersGettingOff.forEach(p => {
             p.onBoard = false;
             p.delivered = true;
@@ -630,6 +714,10 @@ class MoscowRailwaysGame {
             this.passengersDelivered++;
             this.player.exp += 1; // 1 EXP per delivered passenger
         });
+
+        if (deliveredCount > 0) {
+            this.addNotification(`+${deliveredCount} EXP (Passengers delivered)`, true);
+        }
 
         // Passengers getting on
         const passengersWaiting = this.passengers.filter(p =>
@@ -696,6 +784,16 @@ class MoscowRailwaysGame {
             }
         });
 
+        // Update platform people animation
+        this.platformPeople.forEach(person => {
+            person.x += person.speed * (deltaTime / 1000);
+            if (person.x > 500) person.x = -200;
+            if (person.x < -200) person.x = 500;
+        });
+
+        // Update notifications
+        this.updateNotifications(deltaTime);
+
         // Check for station arrival
         this.checkStationArrival();
 
@@ -742,6 +840,7 @@ class MoscowRailwaysGame {
         // Check if we passed the station without stopping
         if (distanceToStation < -100 && !this.trainState.stoppedAtStation) {
             this.player.exp -= 50; // Penalty for skipping station
+            this.addNotification(`-50 EXP (Skipped station: ${nextStation.name})`, false);
             this.trainState.currentStationIndex++;
         }
     }
@@ -756,7 +855,10 @@ class MoscowRailwaysGame {
         const timeDifference = currentMinutes - scheduledMinutes;
 
         if (Math.abs(timeDifference) > 2) {
-            this.player.exp -= Math.abs(timeDifference); // Penalty for being late/early
+            const penalty = Math.abs(timeDifference);
+            this.player.exp -= penalty; // Penalty for being late/early
+            const lateOrEarly = timeDifference > 0 ? 'late' : 'early';
+            this.addNotification(`-${penalty} EXP (${Math.abs(timeDifference)} min ${lateOrEarly})`, false);
         }
 
         // Check door safety (simplified - check if fully on platform)
@@ -766,6 +868,7 @@ class MoscowRailwaysGame {
         // Simplified check - in real implementation would check each door
         if (Math.abs(this.trainState.position - station.distance) > platformLength / 2) {
             this.player.exp -= 10; // Some doors not safe
+            this.addNotification(`-10 EXP (Unsafe door positioning)`, false);
         }
 
         this.playStationAmbient(station.nameEn);
@@ -782,7 +885,9 @@ class MoscowRailwaysGame {
             const timeDifference = currentMinutes - scheduledMinutes;
 
             let routeBonus = 100 - Math.abs(timeDifference);
-            this.player.exp += Math.max(0, routeBonus);
+            const actualBonus = Math.max(0, routeBonus);
+            this.player.exp += actualBonus;
+            this.addNotification(`+${actualBonus} EXP (Route completed!)`, true);
 
             // End of day - return to depot
             setTimeout(() => {
@@ -881,53 +986,159 @@ class MoscowRailwaysGame {
             this.ctx.fillRect(x, trackY - 5, 20, 20);
         }
 
-        // Draw upcoming station
+        // Draw train (always centered on screen)
+        const train = this.trains[this.player.currentTrain];
+        const trainLength = train.railcars * 210; // 200 railcar + 10 gap
+        const trainX = this.canvas.width / 2 - trainLength / 2;
+        const trainY = trackY - 115;
+        this.drawTrain(trainX, trainY);
+
+        // Draw platform and station (in front of train for depth)
         const nextStation = route.stations[this.trainState.currentStationIndex];
         if (nextStation) {
             const stationDistance = nextStation.distance - this.trainState.position;
-            if (stationDistance > -200 && stationDistance < 1000) {
-                const stationX = this.canvas.width / 2 + stationDistance / 2;
-                this.drawStation(stationX, trackY, nextStation);
+            // Station scrolls smoothly based on speed
+            const stationOffset = -(this.animationOffset * 0.3) % this.canvas.width;
+            if (stationDistance > -1000 && stationDistance < 2000) {
+                // Platform moves realistically with train speed
+                const platformX = this.canvas.width / 2 + (stationDistance / 3);
+                this.drawPlatformAndStation(platformX, trackY, nextStation, trainLength);
             }
         }
 
-        // Draw train (always centered on screen)
-        const trainX = this.canvas.width / 2 - 200;
-        const trainY = trackY - 80;
-        this.drawTrain(trainX, trainY);
-
         // Draw speed signs
         this.drawSpeedSigns();
+
+        // Draw notifications on top
+        this.renderNotifications();
     }
 
-    drawStation(x, trackY, station) {
-        // Platform
-        this.ctx.fillStyle = '#808080';
-        this.ctx.fillRect(x - 150, trackY + 15, 300, 20);
+    drawPlatformAndStation(x, trackY, station, trainLength) {
+        // Platform - as long as the train, positioned on the right
+        const platformLength = trainLength + 100; // Slightly longer than train
+        const platformY = trackY + 15; // Level with door height
+        const platformHeight = 25;
 
-        // Station building (simplified)
+        // Platform base (closer to viewer - drawn in front)
+        this.ctx.fillStyle = '#a0a0a0';
+        this.ctx.fillRect(x - platformLength / 2, platformY, platformLength, platformHeight);
+
+        // Platform edge (yellow safety line)
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.fillRect(x - platformLength / 2, platformY, platformLength, 3);
+
+        // Platform texture/detail
+        this.ctx.fillStyle = '#888';
+        for (let px = x - platformLength / 2; px < x + platformLength / 2; px += 40) {
+            this.ctx.fillRect(px, platformY + 5, 2, platformHeight - 10);
+        }
+
+        // Draw people running/walking on platform
+        if (Math.abs(this.trainState.position - station.distance) < 400) {
+            this.drawPlatformPeople(x, platformY, platformLength);
+        }
+
+        // Station building (behind platform)
+        const buildingWidth = 350;
+        const buildingHeight = 150;
+        const buildingY = platformY - buildingHeight - 20;
+
         this.ctx.fillStyle = '#d4d4d4';
-        this.ctx.fillRect(x - 100, trackY - 100, 200, 100);
+        this.ctx.fillRect(x - buildingWidth / 2, buildingY, buildingWidth, buildingHeight);
+
+        // Building windows
+        this.ctx.fillStyle = '#87CEEB';
+        for (let wx = 0; wx < 6; wx++) {
+            for (let wy = 0; wy < 3; wy++) {
+                this.ctx.fillRect(
+                    x - buildingWidth / 2 + 30 + wx * 50,
+                    buildingY + 20 + wy * 40,
+                    35, 28
+                );
+            }
+        }
 
         // Roof
         this.ctx.fillStyle = '#8b0000';
         this.ctx.beginPath();
-        this.ctx.moveTo(x - 120, trackY - 100);
-        this.ctx.lineTo(x, trackY - 130);
-        this.ctx.lineTo(x + 120, trackY - 100);
+        this.ctx.moveTo(x - buildingWidth / 2 - 20, buildingY);
+        this.ctx.lineTo(x, buildingY - 30);
+        this.ctx.lineTo(x + buildingWidth / 2 + 20, buildingY);
         this.ctx.closePath();
         this.ctx.fill();
 
-        // Station name
-        this.ctx.fillStyle = '#000';
-        this.ctx.font = 'bold 16px Arial';
+        // Station name sign
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        this.ctx.fillRect(x - 150, buildingY + buildingHeight - 50, 300, 40);
+        this.ctx.fillStyle = '#FFD700';
+        this.ctx.font = 'bold 22px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(station.name, x, trackY - 110);
+        this.ctx.fillText(station.name, x, buildingY + buildingHeight - 22);
+    }
 
-        // Draw waiting passengers
-        if (this.trainState.doorsOpen && Math.abs(this.trainState.position - station.distance) < 50) {
-            this.drawPassengers(x - 100, trackY + 35, station);
-        }
+    drawPlatformPeople(centerX, platformY, platformLength) {
+        this.platformPeople.forEach(person => {
+            const px = centerX + person.x;
+
+            // Only draw if on platform
+            if (px > centerX - platformLength / 2 && px < centerX + platformLength / 2) {
+                const py = platformY - 5;
+
+                // Animation - walking/running
+                const legSwing = Math.sin(Date.now() / 100 + person.offset) * 8;
+
+                // Body
+                const colors = ['#2563eb', '#dc2626', '#16a34a'];
+                this.ctx.fillStyle = colors[person.type];
+                this.ctx.fillRect(px - 5, py - 35, 10, 25);
+
+                // Head
+                this.ctx.fillStyle = '#ffdbac';
+                this.ctx.beginPath();
+                this.ctx.arc(px, py - 42, 6, 0, Math.PI * 2);
+                this.ctx.fill();
+
+                // Legs (animated)
+                this.ctx.fillStyle = '#333';
+                this.ctx.fillRect(px - 4, py - 10, 3, 10 + Math.abs(legSwing / 2));
+                this.ctx.fillRect(px + 1, py - 10, 3, 10 + Math.abs(legSwing / 2));
+
+                // Arms (swinging)
+                this.ctx.strokeStyle = colors[person.type];
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+                this.ctx.moveTo(px - 5, py - 28);
+                this.ctx.lineTo(px - 8, py - 20 + legSwing / 3);
+                this.ctx.moveTo(px + 5, py - 28);
+                this.ctx.lineTo(px + 8, py - 20 - legSwing / 3);
+                this.ctx.stroke();
+            }
+        });
+    }
+
+    renderNotifications() {
+        this.notifications.forEach(notif => {
+            this.ctx.save();
+            this.ctx.globalAlpha = notif.alpha;
+
+            // Background
+            this.ctx.fillStyle = notif.isPositive ? 'rgba(34, 197, 94, 0.9)' : 'rgba(239, 68, 68, 0.9)';
+            const textWidth = this.ctx.measureText(notif.message).width;
+            this.ctx.fillRect(this.canvas.width / 2 - textWidth / 2 - 20, notif.y - 25, textWidth + 40, 30);
+
+            // Border
+            this.ctx.strokeStyle = notif.isPositive ? '#16a34a' : '#dc2626';
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeRect(this.canvas.width / 2 - textWidth / 2 - 20, notif.y - 25, textWidth + 40, 30);
+
+            // Text
+            this.ctx.fillStyle = '#ffffff';
+            this.ctx.font = 'bold 16px Arial';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(notif.message, this.canvas.width / 2, notif.y);
+
+            this.ctx.restore();
+        });
     }
 
     drawPassengers(x, y, station) {
@@ -972,9 +1183,9 @@ class MoscowRailwaysGame {
 
     drawTrain(x, y) {
         const train = this.trains[this.player.currentTrain];
-        const railcarWidth = 150;  // Increased from 80 to 150
-        const railcarHeight = 90;  // Increased proportionally
-        const gap = 8;
+        const railcarWidth = 200;  // Increased from 150 to 200 for better proportions
+        const railcarHeight = 110; // Increased proportionally
+        const gap = 10;
 
         for (let i = 0; i < train.railcars; i++) {
             const rx = x + i * (railcarWidth + gap);
@@ -994,41 +1205,41 @@ class MoscowRailwaysGame {
 
             // Windows - more windows for wider car
             this.ctx.fillStyle = this.trainState.lightsOn ? '#FFFF99' : '#4A90E2';
-            for (let w = 0; w < 7; w++) {
-                this.ctx.fillRect(rx + 12 + w * 20, y + 18, 14, 25);
+            for (let w = 0; w < 9; w++) {
+                this.ctx.fillRect(rx + 14 + w * 21, y + 20, 15, 28);
             }
 
             // Doors - positioned better
             const doorColor = this.trainState.doorsOpen ? '#1a1a1a' : '#666';
             this.ctx.fillStyle = doorColor;
-            this.ctx.fillRect(rx + 8, y + 48, 18, 42);
-            this.ctx.fillRect(rx + railcarWidth - 26, y + 48, 18, 42);
+            this.ctx.fillRect(rx + 10, y + 55, 22, 55);
+            this.ctx.fillRect(rx + railcarWidth - 32, y + 55, 22, 55);
 
             // Door details
             if (!this.trainState.doorsOpen) {
                 this.ctx.fillStyle = '#888';
-                this.ctx.fillRect(rx + 10, y + 50, 14, 38);
-                this.ctx.fillRect(rx + railcarWidth - 24, y + 50, 14, 38);
+                this.ctx.fillRect(rx + 12, y + 57, 18, 51);
+                this.ctx.fillRect(rx + railcarWidth - 30, y + 57, 18, 51);
             }
 
             // Wheels - larger and more detailed
             this.ctx.fillStyle = '#1a1a1a';
             this.ctx.beginPath();
-            this.ctx.arc(rx + 30, y + railcarHeight + 8, 12, 0, Math.PI * 2);
-            this.ctx.arc(rx + railcarWidth - 30, y + railcarHeight + 8, 12, 0, Math.PI * 2);
+            this.ctx.arc(rx + 40, y + railcarHeight + 10, 14, 0, Math.PI * 2);
+            this.ctx.arc(rx + railcarWidth - 40, y + railcarHeight + 10, 14, 0, Math.PI * 2);
             this.ctx.fill();
 
             // Wheel details
             this.ctx.strokeStyle = '#666';
             this.ctx.lineWidth = 2;
             this.ctx.beginPath();
-            this.ctx.arc(rx + 30, y + railcarHeight + 8, 12, 0, Math.PI * 2);
-            this.ctx.arc(rx + railcarWidth - 30, y + railcarHeight + 8, 12, 0, Math.PI * 2);
+            this.ctx.arc(rx + 40, y + railcarHeight + 10, 14, 0, Math.PI * 2);
+            this.ctx.arc(rx + railcarWidth - 40, y + railcarHeight + 10, 14, 0, Math.PI * 2);
             this.ctx.stroke();
 
             // Undercarriage
             this.ctx.fillStyle = '#333';
-            this.ctx.fillRect(rx + 20, y + railcarHeight, railcarWidth - 40, 6);
+            this.ctx.fillRect(rx + 25, y + railcarHeight, railcarWidth - 50, 8);
         }
     }
 
