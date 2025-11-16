@@ -35,10 +35,17 @@ class MoscowRailwaysGame {
             brakingRate: 2.5,
             doorsOpen: false,
             lightsOn: false,
+            hornActive: false,
+            cruiseControl: false,
+            cruiseSpeed: 0,
             passengersOnBoard: 0,
             stoppedAtStation: false,
             currentStationIndex: 0
         };
+
+        // Animation State
+        this.animationOffset = 0; // For scrolling background
+        this.cloudPositions = this.generateClouds();
 
         // Passenger Management
         this.passengers = [];
@@ -77,40 +84,56 @@ class MoscowRailwaysGame {
         this.canvas.height = container.clientHeight;
     }
 
+    generateClouds() {
+        const clouds = [];
+        for (let i = 0; i < 8; i++) {
+            clouds.push({
+                x: Math.random() * 2000,
+                y: Math.random() * 200 + 50,
+                size: Math.random() * 60 + 40,
+                speed: Math.random() * 0.3 + 0.1
+            });
+        }
+        return clouds;
+    }
+
     initializeTrainData() {
         this.trains = {
             'ed4m': {
                 name: 'ЭД4М',
                 nameEn: 'ed4m',
                 maxSpeed: 90,
-                accelerationRate: 1.2,
-                brakingRate: 2.0,
+                accelerationRate: 4.5,  // Increased from 1.2
+                brakingRate: 6.0,       // Increased from 2.0
                 capacity: 1200,
                 requiredExp: 0,
                 description: 'Classic electric train',
-                railcars: 10
+                railcars: 10,
+                icon: '🚃'
             },
             'em4': {
                 name: 'ЭМ4',
                 nameEn: 'em4',
                 maxSpeed: 100,
-                accelerationRate: 1.5,
-                brakingRate: 2.3,
+                accelerationRate: 5.5,  // Increased from 1.5
+                brakingRate: 7.0,       // Increased from 2.3
                 capacity: 1400,
                 requiredExp: 0,
                 description: 'Modern electric multiple unit',
-                railcars: 12
+                railcars: 12,
+                icon: '🚄'
             },
             'es2g': {
                 name: 'ЭС2Г "Ласточка"',
                 nameEn: 'es2g',
                 maxSpeed: 130,
-                accelerationRate: 2.0,
-                brakingRate: 2.8,
+                accelerationRate: 7.0,  // Increased from 2.0
+                brakingRate: 8.5,       // Increased from 2.8
                 capacity: 1200,
                 requiredExp: 500,
                 description: 'High-speed Lastochka train',
-                railcars: 10
+                railcars: 10,
+                icon: '🚅'
             }
         };
     }
@@ -118,22 +141,37 @@ class MoscowRailwaysGame {
     initializeRouteData() {
         this.routes = {
             'mcd1': {
-                name: 'МЦД-1',
+                name: 'МЦД-1 (Белорусско-Савёловский)',
                 nameEn: 'mcd1',
                 requiredExp: 0,
                 stations: [
                     { name: 'Одинцово', nameEn: 'odintsovo', distance: 0, arrivalTime: { hours: 6, minutes: 30 } },
-                    { name: 'Баковка', nameEn: 'bakovka', distance: 3500, arrivalTime: { hours: 6, minutes: 35 } },
-                    { name: 'Сколково', nameEn: 'skolkovo', distance: 6800, arrivalTime: { hours: 6, minutes: 40 } },
-                    { name: 'Немчиновка', nameEn: 'nemchinovka', distance: 9200, arrivalTime: { hours: 6, minutes: 44 } },
-                    { name: 'Сетунь', nameEn: 'setun', distance: 15600, arrivalTime: { hours: 6, minutes: 54 } },
-                    { name: 'Кунцевская', nameEn: 'kuntsevskaya', distance: 18400, arrivalTime: { hours: 6, minutes: 59 } },
-                    { name: 'Фили', nameEn: 'fili', distance: 22100, arrivalTime: { hours: 7, minutes: 5 } },
-                    { name: 'Беговая', nameEn: 'begovaya', distance: 28700, arrivalTime: { hours: 7, minutes: 15 } },
-                    { name: 'Савёловская', nameEn: 'savelovskaya', distance: 33200, arrivalTime: { hours: 7, minutes: 22 } },
-                    { name: 'Белорусская', nameEn: 'belorusskaya', distance: 36800, arrivalTime: { hours: 7, minutes: 28 } },
-                    { name: 'Тестовская', nameEn: 'testovskaya', distance: 40500, arrivalTime: { hours: 7, minutes: 34 } },
-                    { name: 'Лобня', nameEn: 'lobnya', distance: 65000, arrivalTime: { hours: 8, minutes: 10 } }
+                    { name: 'Баковка', nameEn: 'bakovka', distance: 2400, arrivalTime: { hours: 6, minutes: 33 } },
+                    { name: 'Сколково', nameEn: 'skolkovo', distance: 4600, arrivalTime: { hours: 6, minutes: 36 } },
+                    { name: 'Немчиновка', nameEn: 'nemchinovka', distance: 6800, arrivalTime: { hours: 6, minutes: 39 } },
+                    { name: 'Сетунь', nameEn: 'setun', distance: 13200, arrivalTime: { hours: 6, minutes: 49 } },
+                    { name: 'Кунцевская', nameEn: 'kuntsevskaya', distance: 15800, arrivalTime: { hours: 6, minutes: 53 } },
+                    { name: 'Рабочий Поселок', nameEn: 'rabochiy_poselok', distance: 17600, arrivalTime: { hours: 6, minutes: 56 } },
+                    { name: 'Фили', nameEn: 'fili', distance: 19400, arrivalTime: { hours: 6, minutes: 59 } },
+                    { name: 'Тестовская', nameEn: 'testovskaya', distance: 22100, arrivalTime: { hours: 7, minutes: 3 } },
+                    { name: 'Беговая', nameEn: 'begovaya', distance: 25300, arrivalTime: { hours: 7, minutes: 8 } },
+                    { name: 'Белорусская', nameEn: 'belorusskaya', distance: 27200, arrivalTime: { hours: 7, minutes: 11 } },
+                    { name: 'Савёловская', nameEn: 'savelovskaya', distance: 29800, arrivalTime: { hours: 7, minutes: 15 } },
+                    { name: 'Петровско-Разумовская', nameEn: 'petrovsko_razumovskaya', distance: 34200, arrivalTime: { hours: 7, minutes: 22 } },
+                    { name: 'Окружная', nameEn: 'okruzhnaya', distance: 36500, arrivalTime: { hours: 7, minutes: 25 } },
+                    { name: 'Марк', nameEn: 'mark', distance: 38100, arrivalTime: { hours: 7, minutes: 28 } },
+                    { name: 'Лихоборы', nameEn: 'likhobory', distance: 39900, arrivalTime: { hours: 7, minutes: 31 } },
+                    { name: 'Гражданская', nameEn: 'grazhdanskaya', distance: 42300, arrivalTime: { hours: 7, minutes: 34 } },
+                    { name: 'Дегунино', nameEn: 'degunino', distance: 44100, arrivalTime: { hours: 7, minutes: 37 } },
+                    { name: 'Бескудниково', nameEn: 'beskudnikovo', distance: 45800, arrivalTime: { hours: 7, minutes: 40 } },
+                    { name: 'Лианозово', nameEn: 'lianozovo', distance: 47600, arrivalTime: { hours: 7, minutes: 43 } },
+                    { name: 'Марфино', nameEn: 'marfino', distance: 49400, arrivalTime: { hours: 7, minutes: 46 } },
+                    { name: 'Долгопрудная', nameEn: 'dolgoprudnaya', distance: 52200, arrivalTime: { hours: 7, minutes: 51 } },
+                    { name: 'Водники', nameEn: 'vodniki', distance: 54800, arrivalTime: { hours: 7, minutes: 55 } },
+                    { name: 'Хлебниково', nameEn: 'khlebnikovo', distance: 58100, arrivalTime: { hours: 8, minutes: 0 } },
+                    { name: 'Шереметьевская', nameEn: 'sheremetyevskaya', distance: 60500, arrivalTime: { hours: 8, minutes: 4 } },
+                    { name: 'Катуар', nameEn: 'katuar', distance: 62800, arrivalTime: { hours: 8, minutes: 8 } },
+                    { name: 'Лобня', nameEn: 'lobnya', distance: 65200, arrivalTime: { hours: 8, minutes: 12 } }
                 ]
             },
             'mcd2': {
@@ -219,6 +257,16 @@ class MoscowRailwaysGame {
             case 'l':
                 this.toggleLights();
                 break;
+            case 'h':
+                this.activateHorn();
+                break;
+            case 'c':
+                this.toggleCruiseControl();
+                break;
+            case ' ':
+                e.preventDefault();
+                this.emergencyBrake();
+                break;
             case 'tab':
                 e.preventDefault();
                 this.toggleTimetable();
@@ -287,6 +335,7 @@ class MoscowRailwaysGame {
             const card = document.createElement('div');
             card.className = 'train-card' + (isUnlocked ? '' : ' locked');
             card.innerHTML = `
+                <div class="train-icon">${train.icon}</div>
                 <h3>${train.name}</h3>
                 <p>Max Speed: ${train.maxSpeed} km/h</p>
                 <p>Capacity: ${train.capacity}</p>
@@ -502,6 +551,30 @@ class MoscowRailwaysGame {
         this.playSound('door_closing_warning');
     }
 
+    activateHorn() {
+        this.trainState.hornActive = true;
+        this.playSound('horn');
+        setTimeout(() => {
+            this.trainState.hornActive = false;
+        }, 1500);
+    }
+
+    toggleCruiseControl() {
+        if (this.trainState.speed > 20) {
+            this.trainState.cruiseControl = !this.trainState.cruiseControl;
+            if (this.trainState.cruiseControl) {
+                this.trainState.cruiseSpeed = this.trainState.speed;
+            }
+            this.updateHUD();
+        }
+    }
+
+    emergencyBrake() {
+        this.trainState.speed = Math.max(0, this.trainState.speed - 20);
+        this.trainState.cruiseControl = false;
+        this.playSound('emergency_brake');
+    }
+
     toggleTimetable() {
         const modal = document.getElementById('timetableModal');
         if (modal.classList.contains('hidden')) {
@@ -581,17 +654,27 @@ class MoscowRailwaysGame {
         // Update game time
         this.updateGameTime(deltaTime);
 
-        // Handle acceleration/braking
-        if (this.keys['arrowup'] && !this.trainState.doorsOpen) {
-            this.trainState.acceleration = this.trainState.accelerationRate;
-            this.playTrainSound('acceleration');
-        } else if (this.keys['arrowdown']) {
-            this.trainState.acceleration = -this.trainState.brakingRate;
-            this.playTrainSound('stopping');
+        // Handle cruise control
+        if (this.trainState.cruiseControl) {
+            const speedDiff = this.trainState.cruiseSpeed - this.trainState.speed;
+            if (Math.abs(speedDiff) > 2) {
+                this.trainState.acceleration = speedDiff > 0 ? this.trainState.accelerationRate * 0.5 : -this.trainState.brakingRate * 0.5;
+            } else {
+                this.trainState.acceleration = 0;
+            }
         } else {
-            this.trainState.acceleration = -0.3; // Natural deceleration
-            if (this.trainState.speed > 5) {
-                this.playTrainSound('keeping_speed');
+            // Handle acceleration/braking
+            if (this.keys['arrowup'] && !this.trainState.doorsOpen) {
+                this.trainState.acceleration = this.trainState.accelerationRate;
+                this.playTrainSound('acceleration');
+            } else if (this.keys['arrowdown']) {
+                this.trainState.acceleration = -this.trainState.brakingRate;
+                this.playTrainSound('stopping');
+            } else {
+                this.trainState.acceleration = -0.5; // Natural deceleration (slightly increased)
+                if (this.trainState.speed > 5) {
+                    this.playTrainSound('keeping_speed');
+                }
             }
         }
 
@@ -601,6 +684,17 @@ class MoscowRailwaysGame {
 
         // Update position
         this.trainState.position += (this.trainState.speed * 1000 / 3600) * (deltaTime / 1000); // Convert km/h to m/s
+
+        // Update animation offset for scrolling background
+        this.animationOffset += this.trainState.speed * (deltaTime / 1000) * 2; // Speed up animation
+
+        // Update clouds
+        this.cloudPositions.forEach(cloud => {
+            cloud.x -= cloud.speed * (deltaTime / 1000) * 50;
+            if (cloud.x < -100) {
+                cloud.x = this.canvas.width + 100;
+            }
+        });
 
         // Check for station arrival
         this.checkStationArrival();
@@ -754,25 +848,35 @@ class MoscowRailwaysGame {
     renderGame() {
         const route = this.routes[this.player.currentRoute];
 
-        // Sky
-        const gradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height * 0.6);
-        gradient.addColorStop(0, '#87CEEB');
-        gradient.addColorStop(1, '#E0F6FF');
-        this.ctx.fillStyle = gradient;
+        // Sky - realistic gradient
+        const skyGradient = this.ctx.createLinearGradient(0, 0, 0, this.canvas.height * 0.6);
+        skyGradient.addColorStop(0, '#1e3a8a');  // Deep blue at top
+        skyGradient.addColorStop(0.3, '#3b82f6'); // Bright blue
+        skyGradient.addColorStop(0.7, '#93c5fd'); // Light blue
+        skyGradient.addColorStop(1, '#dbeafe');   // Very light blue at horizon
+        this.ctx.fillStyle = skyGradient;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height * 0.6);
 
-        // Ground
-        this.ctx.fillStyle = '#90EE90';
+        // Draw clouds
+        this.drawClouds();
+
+        // Ground - with gradient
+        const groundGradient = this.ctx.createLinearGradient(0, this.canvas.height * 0.6, 0, this.canvas.height);
+        groundGradient.addColorStop(0, '#86efac'); // Light green
+        groundGradient.addColorStop(0.5, '#22c55e'); // Green
+        groundGradient.addColorStop(1, '#16a34a');   // Darker green
+        this.ctx.fillStyle = groundGradient;
         this.ctx.fillRect(0, this.canvas.height * 0.6, this.canvas.width, this.canvas.height * 0.4);
 
-        // Draw track
+        // Draw track with animation
         const trackY = this.canvas.height * 0.7;
         this.ctx.fillStyle = '#8b7355';
         this.ctx.fillRect(0, trackY, this.canvas.width, 3);
         this.ctx.fillRect(0, trackY + 8, this.canvas.width, 3);
 
-        // Draw ties
-        for (let x = 0; x < this.canvas.width; x += 30) {
+        // Draw ties with scrolling animation
+        const tieOffset = this.animationOffset % 30;
+        for (let x = -tieOffset; x < this.canvas.width + 30; x += 30) {
             this.ctx.fillStyle = '#654321';
             this.ctx.fillRect(x, trackY - 5, 20, 20);
         }
@@ -853,11 +957,24 @@ class MoscowRailwaysGame {
         }
     }
 
+    drawClouds() {
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        this.cloudPositions.forEach(cloud => {
+            // Draw fluffy cloud shape
+            this.ctx.beginPath();
+            this.ctx.arc(cloud.x, cloud.y, cloud.size * 0.5, 0, Math.PI * 2);
+            this.ctx.arc(cloud.x + cloud.size * 0.4, cloud.y, cloud.size * 0.4, 0, Math.PI * 2);
+            this.ctx.arc(cloud.x - cloud.size * 0.4, cloud.y, cloud.size * 0.4, 0, Math.PI * 2);
+            this.ctx.arc(cloud.x, cloud.y - cloud.size * 0.3, cloud.size * 0.3, 0, Math.PI * 2);
+            this.ctx.fill();
+        });
+    }
+
     drawTrain(x, y) {
         const train = this.trains[this.player.currentTrain];
-        const railcarWidth = 80;
-        const railcarHeight = 70;
-        const gap = 5;
+        const railcarWidth = 150;  // Increased from 80 to 150
+        const railcarHeight = 90;  // Increased proportionally
+        const gap = 8;
 
         for (let i = 0; i < train.railcars; i++) {
             const rx = x + i * (railcarWidth + gap);
@@ -867,33 +984,51 @@ class MoscowRailwaysGame {
                                (i === train.railcars - 1) ? '4' :
                                (i % 2 === 0) ? '2' : '3';
 
-            // Draw railcar body
+            // Draw railcar body with more detail
             this.ctx.fillStyle = '#CC0000';
             this.ctx.fillRect(rx, y, railcarWidth, railcarHeight);
 
-            // Windows
-            this.ctx.fillStyle = this.trainState.lightsOn ? '#FFFF99' : '#87CEEB';
-            for (let w = 0; w < 4; w++) {
-                this.ctx.fillRect(rx + 10 + w * 18, y + 15, 12, 20);
+            // Add roof
+            this.ctx.fillStyle = '#990000';
+            this.ctx.fillRect(rx, y, railcarWidth, 10);
+
+            // Windows - more windows for wider car
+            this.ctx.fillStyle = this.trainState.lightsOn ? '#FFFF99' : '#4A90E2';
+            for (let w = 0; w < 7; w++) {
+                this.ctx.fillRect(rx + 12 + w * 20, y + 18, 14, 25);
             }
 
-            // Doors
-            if (this.trainState.doorsOpen) {
-                this.ctx.fillStyle = '#333';
-                this.ctx.fillRect(rx + 5, y + 40, 15, 30);
-                this.ctx.fillRect(rx + 60, y + 40, 15, 30);
-            } else {
-                this.ctx.fillStyle = '#999';
-                this.ctx.fillRect(rx + 5, y + 40, 15, 30);
-                this.ctx.fillRect(rx + 60, y + 40, 15, 30);
+            // Doors - positioned better
+            const doorColor = this.trainState.doorsOpen ? '#1a1a1a' : '#666';
+            this.ctx.fillStyle = doorColor;
+            this.ctx.fillRect(rx + 8, y + 48, 18, 42);
+            this.ctx.fillRect(rx + railcarWidth - 26, y + 48, 18, 42);
+
+            // Door details
+            if (!this.trainState.doorsOpen) {
+                this.ctx.fillStyle = '#888';
+                this.ctx.fillRect(rx + 10, y + 50, 14, 38);
+                this.ctx.fillRect(rx + railcarWidth - 24, y + 50, 14, 38);
             }
 
-            // Wheels
-            this.ctx.fillStyle = '#333';
+            // Wheels - larger and more detailed
+            this.ctx.fillStyle = '#1a1a1a';
             this.ctx.beginPath();
-            this.ctx.arc(rx + 20, y + railcarHeight + 5, 8, 0, Math.PI * 2);
-            this.ctx.arc(rx + 60, y + railcarHeight + 5, 8, 0, Math.PI * 2);
+            this.ctx.arc(rx + 30, y + railcarHeight + 8, 12, 0, Math.PI * 2);
+            this.ctx.arc(rx + railcarWidth - 30, y + railcarHeight + 8, 12, 0, Math.PI * 2);
             this.ctx.fill();
+
+            // Wheel details
+            this.ctx.strokeStyle = '#666';
+            this.ctx.lineWidth = 2;
+            this.ctx.beginPath();
+            this.ctx.arc(rx + 30, y + railcarHeight + 8, 12, 0, Math.PI * 2);
+            this.ctx.arc(rx + railcarWidth - 30, y + railcarHeight + 8, 12, 0, Math.PI * 2);
+            this.ctx.stroke();
+
+            // Undercarriage
+            this.ctx.fillStyle = '#333';
+            this.ctx.fillRect(rx + 20, y + railcarHeight, railcarWidth - 40, 6);
         }
     }
 
@@ -945,6 +1080,8 @@ class MoscowRailwaysGame {
             `Doors: ${this.trainState.doorsOpen ? 'OPEN' : 'CLOSED'}`;
         document.getElementById('lightsStatus').textContent =
             `Lights: ${this.trainState.lightsOn ? 'ON' : 'OFF'}`;
+        document.getElementById('cruiseStatus').textContent =
+            `Cruise: ${this.trainState.cruiseControl ? 'ON (' + Math.round(this.trainState.cruiseSpeed) + ' km/h)' : 'OFF'}`;
         document.getElementById('passengersCount').textContent =
             `Passengers: ${this.trainState.passengersOnBoard}`;
 
