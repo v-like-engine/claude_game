@@ -1,0 +1,146 @@
+# Sound Sources for Moscow Railways Train Simulator
+
+This file contains links to free sounds you can download for the game.
+Download these sounds and place them in the appropriate directories.
+
+## Train Sounds
+
+### Door Sounds
+- **Door Opening**: https://freesound.org/people/thanvannispen/sounds/9960/
+  Save as: sounds/trains/[train_name]/door_opening.mp3
+
+- **Door Closing**: https://freesound.org/people/thanvannispen/sounds/9959/
+  Save as: sounds/trains/[train_name]/door_closing.mp3
+
+### Train Movement
+- **Train Acceleration**: https://freesound.org/people/Benboncan/sounds/60085/
+  Save as: sounds/trains/[train_name]/acceleration.mp3
+
+- **Train Stopping/Braking**: https://freesound.org/people/MattiaGiovanetti/sounds/221936/
+  Save as: sounds/trains/[train_name]/stopping.mp3
+
+- **Train at Speed (keeping_speed)**: https://freesound.org/people/felix.blume/sounds/217506/
+  Save as: sounds/trains/[train_name]/keeping_speed.mp3
+
+### Train Horn
+- **Modern Train Horn**: https://freesound.org/people/luckygal913/sounds/511486/
+  Save as: sounds/trains/[train_name]/horn.mp3
+
+### Warning Sounds
+- **Door Closing Warning**:
+  Text-to-speech in Russian: "Осторожно, двери закрываются"
+  Use: https://ttsmp3.com/ (select Russian language)
+  Or: https://www.naturalreaders.com/online/
+  Save as: sounds/trains/[train_name]/door_closing_warning.mp3
+
+- **Emergency Brake**: https://freesound.org/people/LittleRobotSoundFactory/sounds/270326/
+  Save as: sounds/trains/[train_name]/emergency_brake.mp3
+
+## Station Sounds
+
+### Station Ambient
+- **Train Station Ambience**: https://freesound.org/people/klankbeeld/sounds/144550/
+  Save as: sounds/stations/[station_name]/ambient.mp3
+
+- **Busy Station**: https://freesound.org/people/felix.blume/sounds/242541/
+  Save as: sounds/stations/ambient.mp3 (default)
+
+## Depot Sounds
+
+### Depot Ambient
+- **Train Depot**: https://freesound.org/people/klankbeeld/sounds/207638/
+  Save as: sounds/depot/ambient.mp3
+
+## Background Music
+
+### Calm Background Music
+- **Calm Ambient Music**: https://freesound.org/people/FoolBoyMedia/sounds/264981/
+  Save as: sounds/background/music.mp3
+
+- **Peaceful Piano**: https://freesound.org/people/nhumphrey/sounds/402723/
+  Save as: sounds/background/calm.mp3
+
+## Alternative Sources
+
+### Freesound.org
+- Free sound effects database
+- Requires free account
+- All sounds Creative Commons licensed
+
+### YouTube Audio Library
+- https://www.youtube.com/audiolibrary
+- Free music and sound effects
+- No attribution required
+
+### BBC Sound Effects
+- https://sound-effects.bbcrewind.co.uk/
+- Over 16,000 sound effects
+- Free for personal/educational use
+
+## Russian Railway Specific
+
+### Authentic Russian Train Sounds
+Search YouTube for:
+- "Электричка звук" (Electric train sound)
+- "МЦД звук дверей" (MCD door sound)
+- "Объявление в электричке" (Train announcement)
+
+Use a YouTube to MP3 converter (ensure legal usage):
+- https://ytmp3.cc/
+- Download and edit to appropriate length
+
+## How to Use
+
+1. Download sounds from the links above
+2. Convert to MP3 format if needed (use https://online-audio-converter.com/)
+3. Rename files according to the structure
+4. Place in appropriate train folders:
+   - sounds/trains/er22/
+   - sounds/trains/ed4m/
+   - sounds/trains/em4/
+   - sounds/trains/ep2d/
+   - sounds/trains/esh2/
+   - sounds/trains/es2g/
+
+## Sound File Structure (Required)
+
+```
+sounds/
+├── trains/
+│   ├── er22/
+│   │   ├── acceleration.mp3
+│   │   ├── stopping.mp3
+│   │   ├── keeping_speed.mp3
+│   │   ├── door_opening.mp3
+│   │   ├── door_closing.mp3
+│   │   ├── door_closing_warning.mp3
+│   │   ├── horn.mp3
+│   │   └── emergency_brake.mp3
+│   ├── ed4m/ (same structure)
+│   ├── em4/ (same structure)
+│   ├── ep2d/ (same structure)
+│   ├── esh2/ (same structure)
+│   └── es2g/ (same structure)
+├── stations/
+│   ├── ambient.mp3 (default)
+│   └── [station_name]/ambient.mp3 (optional)
+├── depot/
+│   └── ambient.mp3
+└── background/
+    ├── music.mp3
+    └── calm.mp3
+```
+
+## Tips
+
+- Use sounds around 2-5 seconds for effects
+- Ambient sounds should be 30-60 seconds (loopable)
+- Keep file sizes reasonable (< 1 MB per sound)
+- MP3 format at 128-192 kbps is sufficient
+
+## License Compliance
+
+- Always check license before using sounds
+- Freesound.org sounds are Creative Commons
+- Provide attribution if required
+- Do not use copyrighted material without permission

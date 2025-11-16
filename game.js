@@ -979,9 +979,11 @@ class MoscowRailwaysGame {
         this.ctx.fillRect(0, trackY, this.canvas.width, 3);
         this.ctx.fillRect(0, trackY + 8, this.canvas.width, 3);
 
-        // Draw ties with scrolling animation
+        // Draw ties with scrolling animation (speed increases with train speed)
         const tieOffset = this.animationOffset % 30;
-        for (let x = -tieOffset; x < this.canvas.width + 30; x += 30) {
+        const tieSpeed = 1 + (this.trainState.speed / 30); // Faster at higher speeds
+        const adjustedTieOffset = (this.animationOffset * tieSpeed) % 30;
+        for (let x = -adjustedTieOffset; x < this.canvas.width + 30; x += 30) {
             this.ctx.fillStyle = '#654321';
             this.ctx.fillRect(x, trackY - 5, 20, 20);
         }
@@ -997,11 +999,9 @@ class MoscowRailwaysGame {
         const nextStation = route.stations[this.trainState.currentStationIndex];
         if (nextStation) {
             const stationDistance = nextStation.distance - this.trainState.position;
-            // Station scrolls smoothly based on speed
-            const stationOffset = -(this.animationOffset * 0.3) % this.canvas.width;
             if (stationDistance > -1000 && stationDistance < 2000) {
-                // Platform moves realistically with train speed
-                const platformX = this.canvas.width / 2 + (stationDistance / 3);
+                // Platform moves at same speed as railway (ties)
+                const platformX = this.canvas.width / 2 + (stationDistance / 3) - (adjustedTieOffset * 2);
                 this.drawPlatformAndStation(platformX, trackY, nextStation, trainLength);
             }
         }
@@ -1014,23 +1014,34 @@ class MoscowRailwaysGame {
     }
 
     drawPlatformAndStation(x, trackY, station, trainLength) {
-        // Platform - as long as the train, positioned on the right
+        // Platform - simple raised ground level, as long as the train
         const platformLength = trainLength + 100; // Slightly longer than train
         const platformY = trackY + 15; // Level with door height
-        const platformHeight = 25;
+        const platformHeight = 30;
 
-        // Platform base (closer to viewer - drawn in front)
-        this.ctx.fillStyle = '#a0a0a0';
+        // Platform base - simple raised concrete/asphalt surface
+        const platformGradient = this.ctx.createLinearGradient(0, platformY, 0, platformY + platformHeight);
+        platformGradient.addColorStop(0, '#b0b0b0');
+        platformGradient.addColorStop(1, '#808080');
+        this.ctx.fillStyle = platformGradient;
         this.ctx.fillRect(x - platformLength / 2, platformY, platformLength, platformHeight);
 
         // Platform edge (yellow safety line)
         this.ctx.fillStyle = '#FFD700';
-        this.ctx.fillRect(x - platformLength / 2, platformY, platformLength, 3);
+        this.ctx.fillRect(x - platformLength / 2, platformY, platformLength, 4);
 
-        // Platform texture/detail
-        this.ctx.fillStyle = '#888';
-        for (let px = x - platformLength / 2; px < x + platformLength / 2; px += 40) {
-            this.ctx.fillRect(px, platformY + 5, 2, platformHeight - 10);
+        // Platform side (depth effect)
+        this.ctx.fillStyle = '#606060';
+        this.ctx.fillRect(x - platformLength / 2, platformY + platformHeight, platformLength, 3);
+
+        // Platform texture lines (paving)
+        this.ctx.strokeStyle = '#999';
+        this.ctx.lineWidth = 1;
+        for (let px = x - platformLength / 2; px < x + platformLength / 2; px += 50) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(px, platformY);
+            this.ctx.lineTo(px, platformY + platformHeight);
+            this.ctx.stroke();
         }
 
         // Draw people running/walking on platform
@@ -1038,42 +1049,28 @@ class MoscowRailwaysGame {
             this.drawPlatformPeople(x, platformY, platformLength);
         }
 
-        // Station building (behind platform)
-        const buildingWidth = 350;
-        const buildingHeight = 150;
-        const buildingY = platformY - buildingHeight - 20;
+        // Station name sign at the beginning of platform
+        const signX = x - platformLength / 2 + 100; // At start of platform
+        const signY = platformY - 80;
 
-        this.ctx.fillStyle = '#d4d4d4';
-        this.ctx.fillRect(x - buildingWidth / 2, buildingY, buildingWidth, buildingHeight);
+        // Sign post
+        this.ctx.fillStyle = '#444';
+        this.ctx.fillRect(signX - 3, signY, 6, 80);
 
-        // Building windows
-        this.ctx.fillStyle = '#87CEEB';
-        for (let wx = 0; wx < 6; wx++) {
-            for (let wy = 0; wy < 3; wy++) {
-                this.ctx.fillRect(
-                    x - buildingWidth / 2 + 30 + wx * 50,
-                    buildingY + 20 + wy * 40,
-                    35, 28
-                );
-            }
-        }
+        // Sign board
+        this.ctx.fillStyle = '#1e3a8a';
+        this.ctx.fillRect(signX - 120, signY - 50, 240, 60);
 
-        // Roof
-        this.ctx.fillStyle = '#8b0000';
-        this.ctx.beginPath();
-        this.ctx.moveTo(x - buildingWidth / 2 - 20, buildingY);
-        this.ctx.lineTo(x, buildingY - 30);
-        this.ctx.lineTo(x + buildingWidth / 2 + 20, buildingY);
-        this.ctx.closePath();
-        this.ctx.fill();
+        // Sign border
+        this.ctx.strokeStyle = '#FFD700';
+        this.ctx.lineWidth = 3;
+        this.ctx.strokeRect(signX - 120, signY - 50, 240, 60);
 
-        // Station name sign
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-        this.ctx.fillRect(x - 150, buildingY + buildingHeight - 50, 300, 40);
-        this.ctx.fillStyle = '#FFD700';
-        this.ctx.font = 'bold 22px Arial';
+        // Station name text
+        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.font = 'bold 24px Arial';
         this.ctx.textAlign = 'center';
-        this.ctx.fillText(station.name, x, buildingY + buildingHeight - 22);
+        this.ctx.fillText(station.name, signX, signY - 15);
     }
 
     drawPlatformPeople(centerX, platformY, platformLength) {
