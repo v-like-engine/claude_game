@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moscow Railways - Train Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Main Menu -->
+        <div id="mainMenu" class="menu">
+            <h1>Moscow Railways</h1>
+            <h2>Train Simulator</h2>
+            <div class="menu-buttons">
+                <button id="newGameBtn" class="menu-btn">New Game</button>
+                <button id="loadGameBtn" class="menu-btn">Load Game</button>
+                <button id="settingsBtn" class="menu-btn">Settings</button>
+                <button id="exitBtn" class="menu-btn">Exit</button>
+            </div>
+        </div>
+
+        <!-- Load Game Menu -->
+        <div id="loadMenu" class="menu hidden">
+            <h2>Load Game</h2>
+            <div class="menu-buttons" id="saveSlots"></div>
+            <button id="backToMainBtn" class="menu-btn">Back</button>
+        </div>
+
+        <!-- Settings Menu -->
+        <div id="settingsMenu" class="menu hidden">
+            <h2>Settings</h2>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label>Master Volume:</label>
+                    <input type="range" id="masterVolume" min="0" max="100" value="70">
+                    <span id="volumeValue">70%</span>
+                </div>
+                <div class="setting-item">
+                    <label>Sound Effects:</label>
+                    <input type="range" id="sfxVolume" min="0" max="100" value="80">
+                    <span id="sfxValue">80%</span>
+                </div>
+                <div class="setting-item">
+                    <label>Music:</label>
+                    <input type="range" id="musicVolume" min="0" max="100" value="50">
+                    <span id="musicValue">50%</span>
+                </div>
+            </div>
+            <button id="backToMainFromSettings" class="menu-btn">Back</button>
+        </div>
+
+        <!-- Train Selection Menu -->
+        <div id="trainSelectionMenu" class="menu hidden">
+            <h2>Select Your Train</h2>
+            <div id="trainsList" class="trains-grid"></div>
+            <button id="backToDepotBtn" class="menu-btn">Back to Depot</button>
+        </div>
+
+        <!-- Route Selection Menu -->
+        <div id="routeSelectionMenu" class="menu hidden">
+            <h2>Select Route</h2>
+            <div id="routesList" class="routes-list"></div>
+            <button id="backToTrainSelection" class="menu-btn">Back</button>
+        </div>
+
+        <!-- Pause Menu -->
+        <div id="pauseMenu" class="menu hidden">
+            <h2>Paused</h2>
+            <div class="menu-buttons">
+                <button id="resumeBtn" class="menu-btn">Resume</button>
+                <button id="saveExitBtn" class="menu-btn">Save and Exit</button>
+            </div>
+        </div>
+
+        <!-- HUD (Heads-Up Display) -->
+        <div id="hud" class="hidden">
+            <div class="hud-top">
+                <div class="hud-section">
+                    <div class="hud-item">
+                        <span class="hud-label">Speed:</span>
+                        <span id="speed" class="hud-value">0 km/h</span>
+                    </div>
+                    <div class="hud-item">
+                        <span class="hud-label">EXP:</span>
+                        <span id="exp" class="hud-value">0</span>
+                    </div>
+                </div>
+                <div class="hud-section">
+                    <div id="currentTime" class="hud-time">06:00</div>
+                </div>
+            </div>
+
+            <div class="hud-stations">
+                <h3>Upcoming Stations:</h3>
+                <div id="stationsList"></div>
+                <div class="hud-info">Press TAB for full timetable</div>
+            </div>
+
+            <div class="hud-bottom">
+                <div class="hud-controls">
+                    <div class="control-hint">
+                        <span class="key">↑</span> Accelerate
+                    </div>
+                    <div class="control-hint">
+                        <span class="key">↓</span> Brake
+                    </div>
+                    <div class="control-hint">
+                        <span class="key">D</span> Doors
+                    </div>
+                    <div class="control-hint">
+                        <span class="key">W</span> Warning
+                    </div>
+                    <div class="control-hint">
+                        <span class="key">L</span> Lights
+                    </div>
+                    <div class="control-hint">
+                        <span class="key">ESC</span> Pause
+                    </div>
+                </div>
+                <div class="hud-status">
+                    <div id="doorsStatus">Doors: CLOSED</div>
+                    <div id="lightsStatus">Lights: OFF</div>
+                    <div id="passengersCount">Passengers: 0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Timetable Modal -->
+        <div id="timetableModal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Full Timetable</h2>
+                <div id="fullTimetable"></div>
+                <button id="closeTimetable" class="menu-btn">Close (TAB)</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

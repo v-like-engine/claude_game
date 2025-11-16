@@ -1,0 +1,460 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#game-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    max-width: 1920px;
+    max-height: 1080px;
+    background: #1a1a2e;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 50%, #90EE90 100%);
+}
+
+/* Menus */
+.menu {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(26, 26, 46, 0.95);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    min-width: 400px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.menu h1 {
+    color: #ffd700;
+    font-size: 48px;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.menu h2 {
+    color: #fff;
+    font-size: 32px;
+    margin-bottom: 30px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.menu-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.menu-btn {
+    padding: 15px 30px;
+    font-size: 18px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.menu-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.menu-btn:active {
+    transform: translateY(0);
+}
+
+.menu-btn:disabled {
+    background: #555;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Settings Menu */
+.settings-content {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.setting-item {
+    margin-bottom: 20px;
+    color: white;
+}
+
+.setting-item label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.setting-item input[type="range"] {
+    width: 70%;
+    margin-right: 10px;
+}
+
+/* Train Selection */
+.trains-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.train-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.train-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #667eea;
+    transform: scale(1.05);
+}
+
+.train-card.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.train-card h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+}
+
+.train-card p {
+    color: #fff;
+    font-size: 14px;
+    margin: 5px 0;
+}
+
+/* Routes List */
+.routes-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.route-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.route-card:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #667eea;
+}
+
+.route-card.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.route-card h3 {
+    color: #ffd700;
+    margin-bottom: 8px;
+}
+
+.route-card p {
+    color: #fff;
+    font-size: 14px;
+}
+
+/* HUD */
+#hud {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    color: white;
+}
+
+.hud-top {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+}
+
+.hud-section {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 15px 20px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.hud-item {
+    margin: 5px 0;
+}
+
+.hud-label {
+    font-weight: bold;
+    margin-right: 10px;
+    color: #ffd700;
+}
+
+.hud-value {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.hud-time {
+    font-size: 32px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.hud-stations {
+    position: absolute;
+    top: 120px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+    min-width: 300px;
+    backdrop-filter: blur(10px);
+}
+
+.hud-stations h3 {
+    color: #ffd700;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.station-item {
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.station-item.current {
+    background: rgba(255, 215, 0, 0.3);
+    border-left: 3px solid #ffd700;
+}
+
+.station-item.next {
+    background: rgba(102, 126, 234, 0.3);
+}
+
+.hud-info {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #aaa;
+    font-style: italic;
+}
+
+.hud-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, transparent 100%);
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.hud-controls {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.control-hint {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+}
+
+.key {
+    display: inline-block;
+    background: #667eea;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.hud-status {
+    text-align: right;
+}
+
+.hud-status div {
+    background: rgba(0, 0, 0, 0.5);
+    padding: 8px 15px;
+    border-radius: 5px;
+    margin: 5px 0;
+    backdrop-filter: blur(10px);
+}
+
+/* Modal */
+.modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: rgba(26, 26, 46, 0.95);
+    padding: 30px;
+    border-radius: 15px;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-content h2 {
+    color: #ffd700;
+    margin-bottom: 20px;
+}
+
+#fullTimetable {
+    color: white;
+}
+
+.timetable-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    margin: 5px 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+}
+
+.timetable-row.passed {
+    opacity: 0.5;
+}
+
+.timetable-row.current {
+    background: rgba(255, 215, 0, 0.3);
+    border-left: 3px solid #ffd700;
+}
+
+/* Save Slots */
+.save-slot {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 10px;
+    margin: 10px 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.save-slot:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #667eea;
+}
+
+.save-slot.empty {
+    opacity: 0.5;
+    font-style: italic;
+}
+
+.save-slot h3 {
+    color: #ffd700;
+    margin-bottom: 5px;
+}
+
+.save-slot p {
+    color: #fff;
+    font-size: 14px;
+    margin: 3px 0;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #764ba2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .menu {
+        min-width: 90%;
+        padding: 20px;
+    }
+
+    .menu h1 {
+        font-size: 32px;
+    }
+
+    .menu h2 {
+        font-size: 24px;
+    }
+
+    .hud-controls {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .hud-stations {
+        min-width: 200px;
+        font-size: 12px;
+    }
+}

@@ -1,0 +1,21 @@
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Assets (optional - remove these lines if you want to track assets)
+# pictures/**/*.png
+# pictures/**/*.jpg
+# sounds/**/*.mp3
+
+# Temporary files
+*.tmp
